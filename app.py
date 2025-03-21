@@ -42,9 +42,58 @@ except:
     sheet.append_row(['image_filename', 'od'])
     df = pd.DataFrame(columns=['image_filename', 'od'])
 
+# ✅ Define function to download images from Google Drive
+def download_image_from_drive(service, file_name, output_path, folder_id):
+    """Download an image from Google Drive given its name and folder."""
+    query = f"name='{file_name}' and '{folder_id}' in parents"
+    results = service.files().list(q=query, spaces='drive').execute()
+    
+    files = results.get('files', [])
+    
+    if not files:
+        st.error(f"❌ Image {file_name} not found in Drive.")
+        return None
+    
+    file_id = files[0]['id']
+    request = service.files().get_media(fileId=file_id)
+    
+    with open(output_path, "wb") as f:
+        f.write(request.execute())
+    
+    return output_path  # ✅ Local path to downloaded image
+
 # ✅ Train model if enough data is available
 if len(df) >= 5:
-    X = np.array([preprocess_image(f"temp_downloaded_{row['image_filename']}") for _, row in df.iterrows()])
+    X = []
+    y = []
+    
+    for _, row in df.iterrows():
+        local_path = f"temp_downloaded_{row['image_filename']}"
+        downloaded_path = download_image_from_drive(drive_service, row["image_filename"], local_path, folder_id)
+        
+        if downloaded_path:  # ✅ Only process if download was successful
+            X.append(preprocess_image(downloaded_path))
+            y.append(row["od"])
+
+    X = np.array(X)
+    y = np.array(y)
+
+    model = RandomForestRegressor(n_estimators=50)
+    model.fit(X, y)
+    prediction_ready = True
+else:
+    prediction_ready = False
+    model = None
+    st.info(f"ℹ️ Add {5 - len(df)} more images to start predictions.")
+for _, row in df.iterrows():
+    local_path = f"temp_downloaded_{row['image_filename']}"
+    downloaded_path = download_image_from_drive(drive_service, row["image_filename"], local_path, folder_id)
+    
+    if downloaded_path:  # ✅ Only process if download was successful
+        X.append(preprocess_image(downloaded_path))
+
+X = np.array(X)
+
     y = df['od'].values
     model = RandomForestRegressor(n_estimators=50)
     model.fit(X, y)
