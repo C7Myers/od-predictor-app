@@ -14,16 +14,16 @@ from googleapiclient.http import MediaFileUpload
 
 st.title("📸 Easy OD Predictor App")
 
-# Connect to Google Drive
-scopes = ['https://www.googleapis.com/auth/drive', 'https://www.googleapis.com/auth/spreadsheets']
-creds = Credentials.from_service_account_file("your-json-key.json", scopes=scopes)
+# ✅ Load credentials securely from Streamlit Secrets
+service_account_info = st.secrets["gcp_service_account"]
+creds = Credentials.from_service_account_info(service_account_info)
 client = gspread.authorize(creds)
 drive_service = build('drive', 'v3', credentials=creds)
 
-# Your Google Drive folder ID clearly stated
+# ✅ Your Google Drive folder ID
 folder_id = '1gaU-WUZesT9E4VXRnIs6H4NVslI861tk'
 
-# Open or create Google Sheet clearly
+# ✅ Open or create Google Sheet for OD data
 sheet_name = "OD_App_Data"
 try:
     sheet = client.open(sheet_name).sheet1
@@ -33,7 +33,7 @@ except:
     sheet.append_row(['image_filename', 'od'])
     df = pd.DataFrame(columns=['image_filename', 'od'])
 
-# Train model clearly
+# ✅ Train model if enough data is available
 if len(df) >= 5:
     X = np.array([preprocess_image(f"temp_downloaded_{row['image_filename']}") for _, row in df.iterrows()])
     y = df['od'].values
@@ -45,7 +45,7 @@ else:
     model = None
     st.info(f"ℹ️ Add {5 - len(df)} more images to start predictions.")
 
-# Upload Image
+# ✅ Upload Image
 uploaded_file = st.file_uploader("Upload Image", type=['jpg', 'jpeg', 'png'])
 
 if uploaded_file:
@@ -55,7 +55,7 @@ if uploaded_file:
     temp_image_path = 'temp.jpg'
     image.save(temp_image_path)
 
-    # Predict OD if model ready
+    # ✅ Predict OD if model is trained
     if prediction_ready:
         features = preprocess_image(temp_image_path).reshape(1, -1)
         predicted_od = model.predict(features)[0]
@@ -72,12 +72,12 @@ if uploaded_file:
                 timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
                 image_filename = f'image_{timestamp}.jpg'
 
-                # Upload to Google Drive
+                # ✅ Upload image to Google Drive
                 file_metadata = {'name': image_filename, 'parents': [folder_id]}
                 media = MediaFileUpload(temp_image_path, mimetype='image/jpeg')
                 drive_service.files().create(body=file_metadata, media_body=media).execute()
 
-                # Save entry to Google Sheet
+                # ✅ Save OD entry to Google Sheets
                 sheet.append_row([image_filename, od_float])
 
                 os.remove(temp_image_path)
