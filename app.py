@@ -28,7 +28,6 @@ creds = Credentials.from_service_account_info(service_account_info, scopes=SCOPE
 client = gspread.authorize(creds)
 drive_service = build("drive", "v3", credentials=creds)
 
-
 # ✅ Your Google Drive folder ID
 folder_id = '1gaU-WUZesT9E4VXRnIs6H4NVslI861tk'
 
@@ -42,7 +41,7 @@ except:
     sheet.append_row(['image_filename', 'od'])
     df = pd.DataFrame(columns=['image_filename', 'od'])
 
-# ✅ Define function to download images from Google Drive
+# ✅ Function to download images from Google Drive
 def download_image_from_drive(service, file_name, output_path, folder_id):
     """Download an image from Google Drive given its name and folder."""
     query = f"name='{file_name}' and '{folder_id}' in parents"
@@ -78,23 +77,6 @@ if len(df) >= 5:
     X = np.array(X)
     y = np.array(y)
 
-    model = RandomForestRegressor(n_estimators=50)
-    model.fit(X, y)
-    prediction_ready = True
-else:
-    prediction_ready = False
-    model = None
-    st.info(f"ℹ️ Add {5 - len(df)} more images to start predictions.")
-for _, row in df.iterrows():
-    local_path = f"temp_downloaded_{row['image_filename']}"
-    downloaded_path = download_image_from_drive(drive_service, row["image_filename"], local_path, folder_id)
-    
-    if downloaded_path:  # ✅ Only process if download was successful
-        X.append(preprocess_image(downloaded_path))
-
-X = np.array(X)
-
-    y = df['od'].values
     model = RandomForestRegressor(n_estimators=50)
     model.fit(X, y)
     prediction_ready = True
@@ -146,3 +128,4 @@ if uploaded_file:
                 st.error("❌ Enter a valid numeric OD value.")
         else:
             st.error("❌ OD value is required.")
+
