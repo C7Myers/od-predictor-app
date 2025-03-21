@@ -14,6 +14,8 @@ from googleapiclient.http import MediaFileUpload
 
 st.title("📸 Easy OD Predictor App")
 
+
+
 # ✅ Load credentials securely from Streamlit Secrets
 service_account_info = st.secrets["gcp_service_account"]
 creds = Credentials.from_service_account_info(service_account_info)
@@ -23,6 +25,15 @@ drive_service = build('drive', 'v3', credentials=creds)
 # ✅ Debug: Check if secrets are loading correctly
 st.write("✅ Checking Secrets...")
 st.write(st.secrets["gcp_service_account"])
+
+st.write("✅ Authenticated as:", creds.service_account_email)
+
+try:
+    st.write("📝 Listing available Google Sheets...")
+    spreadsheet_list = client.openall()
+    st.write("📄 Found sheets:", [s.title for s in spreadsheet_list])
+except Exception as e:
+    st.error(f"❌ Error accessing Google Sheets: {str(e)}")
 
 # ✅ Your Google Drive folder ID
 folder_id = '1gaU-WUZesT9E4VXRnIs6H4NVslI861tk'
