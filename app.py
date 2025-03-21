@@ -14,13 +14,19 @@ from googleapiclient.http import MediaFileUpload
 
 st.title("📸 Easy OD Predictor App")
 
-
+# ✅ Define OAuth Scopes
+SCOPES = [
+    "https://www.googleapis.com/auth/spreadsheets",
+    "https://www.googleapis.com/auth/drive"
+]
 
 # ✅ Load credentials securely from Streamlit Secrets
 service_account_info = st.secrets["gcp_service_account"]
-creds = Credentials.from_service_account_info(service_account_info)
+creds = Credentials.from_service_account_info(service_account_info, scopes=SCOPES)
+
+# ✅ Authenticate Google APIs
 client = gspread.authorize(creds)
-drive_service = build('drive', 'v3', credentials=creds)
+drive_service = build("drive", "v3", credentials=creds)
 
 # ✅ Debug: Check if secrets are loading correctly
 st.write("✅ Checking Secrets...")
