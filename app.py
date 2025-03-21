@@ -20,6 +20,10 @@ creds = Credentials.from_service_account_info(service_account_info)
 client = gspread.authorize(creds)
 drive_service = build('drive', 'v3', credentials=creds)
 
+# ✅ Debug: Check if secrets are loading correctly
+st.write("✅ Checking Secrets...")
+st.write(st.secrets["gcp_service_account"])
+
 # ✅ Your Google Drive folder ID
 folder_id = '1gaU-WUZesT9E4VXRnIs6H4NVslI861tk'
 
