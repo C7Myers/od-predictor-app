@@ -7,23 +7,35 @@ from datetime import datetime
 from sklearn.ensemble import RandomForestRegressor
 import joblib
 from preprocessing import preprocess_image
+import gspread
+from google.oauth2.service_account import Credentials
+from googleapiclient.discovery import build
+from googleapiclient.http import MediaFileUpload
 
 st.title("📸 Easy OD Predictor App")
 
-os.makedirs('uploaded_images', exist_ok=True)
-csv_file = 'od_labels.csv'
+# Connect to Google Drive
+scopes = ['https://www.googleapis.com/auth/drive', 'https://www.googleapis.com/auth/spreadsheets']
+creds = Credentials.from_service_account_file("your-json-key.json", scopes=scopes)
+client = gspread.authorize(creds)
+drive_service = build('drive', 'v3', credentials=creds)
 
-# Create CSV if it doesn't exist
-if not os.path.exists(csv_file):
+# Your Google Drive folder ID clearly stated
+folder_id = '1gaU-WUZesT9E4VXRnIs6H4NVslI861tk'
+
+# Open or create Google Sheet clearly
+sheet_name = "OD_App_Data"
+try:
+    sheet = client.open(sheet_name).sheet1
+    df = pd.DataFrame(sheet.get_all_records())
+except:
+    sheet = client.create(sheet_name).sheet1
+    sheet.append_row(['image_filename', 'od'])
     df = pd.DataFrame(columns=['image_filename', 'od'])
-    df.to_csv(csv_file, index=False)
 
-# Load existing data
-df = pd.read_csv(csv_file)
-
-# Train model if enough data
+# Train model clearly
 if len(df) >= 5:
-    X = np.array([preprocess_image(f"uploaded_images/{path}") for path in df['image_filename']])
+    X = np.array([preprocess_image(f"temp_downloaded_{row['image_filename']}") for _, row in df.iterrows()])
     y = df['od'].values
     model = RandomForestRegressor(n_estimators=50)
     model.fit(X, y)
@@ -40,7 +52,6 @@ if uploaded_file:
     image = Image.open(uploaded_file)
     st.image(image, caption='Your Uploaded Image', use_container_width=True)
 
-    # Temp save for prediction
     temp_image_path = 'temp.jpg'
     image.save(temp_image_path)
 
@@ -52,7 +63,6 @@ if uploaded_file:
     else:
         st.warning("⚠️ Prediction unavailable, more data needed.")
 
-    # Enter Actual OD
     od_value = st.text_input("Enter Actual OD:", "")
 
     if st.button("Save Image & Actual OD"):
@@ -61,20 +71,20 @@ if uploaded_file:
                 od_float = float(od_value)
                 timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
                 image_filename = f'image_{timestamp}.jpg'
-                os.rename(temp_image_path, f'uploaded_images/{image_filename}')
 
-                # Save entry to CSV
-                new_entry = pd.DataFrame({'image_filename': [image_filename], 'od': [od_float]})
-                new_entry.to_csv(csv_file, mode='a', header=False, index=False)
+                # Upload to Google Drive
+                file_metadata = {'name': image_filename, 'parents': [folder_id]}
+                media = MediaFileUpload(temp_image_path, mimetype='image/jpeg')
+                drive_service.files().create(body=file_metadata, media_body=media).execute()
 
-                st.success("✅ Data saved! Your model will continuously improve.")
+                # Save entry to Google Sheet
+                sheet.append_row([image_filename, od_float])
+
+                os.remove(temp_image_path)
+
+                st.success("✅ Data permanently stored in Google Drive!")
 
             except ValueError:
                 st.error("❌ Enter a valid numeric OD value.")
         else:
             st.error("❌ OD value is required.")
-
-# Easy download button to get your data clearly
-if os.path.exists(csv_file):
-    with open(csv_file, 'rb') as f:
-        st.download_button('📥 Download Data (CSV)', f, file_name='od_labels.csv')
