@@ -129,8 +129,33 @@ if uploaded_file:
 
                 st.success("✅ Thank you for helping train the model!")
 
+                # ✅ Show Deviation Trend
+                st.subheader("📉 Model Deviation Over Time")
+                df = pd.DataFrame(sheet.get_all_records())
+                df_clean = df.dropna(subset=["deviation"])
+                df_clean["entry"] = range(1, len(df_clean) + 1)
+                
+                st.line_chart(df_clean[["deviation"]].set_index("entry"))
+
+                # ✅ Stats
+                current_dev = deviation
+                avg_dev = df_clean["deviation"].mean()
+
+                st.write(f"📈 Current Deviation: `{current_dev:.3f}`")
+                st.write(f"📊 Average Deviation: `{avg_dev:.3f}`")
+
+                if current_dev < avg_dev:
+                    st.success("✅ Model performance is improving!")
+                else:
+                    st.warning("📉 Prediction is above average deviation.")
+            
             except ValueError:
                 st.error("❌ Enter a valid numeric OD value.")
         else:
             st.error("❌ OD value is required.")
+
+   
+
+
+    
 
