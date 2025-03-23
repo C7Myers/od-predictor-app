@@ -106,7 +106,7 @@ if uploaded_file:
 
     od_value = st.text_input("Enter Actual OD:", "")
 
-    if st.button("Save Image & Actual OD"):
+    if st.button("Please Save Image & Actual OD"):
         if od_value:
             try:
                 od_float = float(od_value)
@@ -127,7 +127,7 @@ if uploaded_file:
 
                 os.remove(temp_image_path)
 
-                st.success("✅ Data permanently stored in Google Drive!")
+                st.success("✅ Thank you for helping train the model!")
 
             except ValueError:
                 st.error("❌ Enter a valid numeric OD value.")
