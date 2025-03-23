@@ -12,7 +12,7 @@ from google.oauth2.service_account import Credentials
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaFileUpload
 
-st.title("📸 Easy OD Predictor App")
+st.title("📸 OD Predictor App")
 
 # ✅ Define OAuth Scopes
 SCOPES = [
@@ -30,6 +30,7 @@ drive_service = build("drive", "v3", credentials=creds)
 
 # ✅ Your Google Drive folder ID
 folder_id = '1gaU-WUZesT9E4VXRnIs6H4NVslI861tk'
+image_subfolder_id = '11IXxbuYT7gAvd4Yggn1GtAd2sv0FF_RO'
 
 # ✅ Open or create Google Sheet for OD data
 sheet_name = "OD_App_Data"
@@ -38,13 +39,13 @@ try:
     df = pd.DataFrame(sheet.get_all_records())
 except:
     sheet = client.create(sheet_name).sheet1
-    sheet.append_row(['image_filename', 'od'])
+    sheet.append_row(['image_filename', 'od', 'predicted_od', 'deviation'])
     df = pd.DataFrame(columns=['image_filename', 'od'])
 
 # ✅ Function to download images from Google Drive
-def download_image_from_drive(service, file_name, output_path, folder_id):
+def download_image_from_drive(service, file_name, output_path, image_subfolder_id):
     """Download an image from Google Drive given its name and folder."""
-    query = f"name='{file_name}' and '{folder_id}' in parents"
+    query = f"name='{file_name}' and '{image_subfolder_id}' in parents"
     results = service.files().list(q=query, spaces='drive').execute()
     
     files = results.get('files', [])
@@ -68,7 +69,7 @@ if len(df) >= 5:
     
     for _, row in df.iterrows():
         local_path = f"temp_downloaded_{row['image_filename']}"
-        downloaded_path = download_image_from_drive(drive_service, row["image_filename"], local_path, folder_id)
+        downloaded_path = download_image_from_drive(drive_service, row["image_filename"], local_path, image_subfolder_id)
         
         if downloaded_path:  # ✅ Only process if download was successful
             X.append(preprocess_image(downloaded_path))
@@ -113,12 +114,16 @@ if uploaded_file:
                 image_filename = f'image_{timestamp}.jpg'
 
                 # ✅ Upload image to Google Drive
-                file_metadata = {'name': image_filename, 'parents': [folder_id]}
+                file_metadata = {'name': image_filename, 'parents': [image_subfolder_id]}
                 media = MediaFileUpload(temp_image_path, mimetype='image/jpeg')
                 drive_service.files().create(body=file_metadata, media_body=media).execute()
 
+                # Calculate prediction and deviation
+                predicted_od = model.predict(features)[0] if prediction_ready else None
+                deviation = abs(od_float - predicted_od) if predicted_od is not None else None
+
                 # ✅ Save OD entry to Google Sheets
-                sheet.append_row([image_filename, od_float])
+                sheet.append_row([image_filename, od_float, predicted_od, deviation])
 
                 os.remove(temp_image_path)
 
