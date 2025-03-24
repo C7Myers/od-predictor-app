@@ -34,13 +34,11 @@ image_subfolder_id = '11IXxbuYT7gAvd4Yggn1GtAd2sv0FF_RO'
 
 # ✅ Open or create Google Sheet for OD data
 sheet_name = "OD_App_Data"
-try:
-    sheet = client.open(sheet_name).sheet1
-    df = pd.DataFrame(sheet.get_all_records())
-except:
-    sheet = client.create(sheet_name).sheet1
-    sheet.append_row(['image_filename', 'od', 'predicted_od', 'deviation'])
-    df = pd.DataFrame(columns=['image_filename', 'od','predicted_od', 'deviation'])
+
+sheet = client.open(sheet_name).sheet1
+df = pd.DataFrame(sheet.get_all_records())
+entry = len(df) + 1
+
 
 # ✅ Function to download images from Google Drive
 def download_image_from_drive(service, file_name, output_path, image_subfolder_id):
@@ -123,7 +121,7 @@ if uploaded_file:
                 deviation = abs(od_float - predicted_od) if predicted_od is not None else None
 
                 # ✅ Save OD entry to Google Sheets
-                sheet.append_row([image_filename, od_float, predicted_od, deviation])
+                sheet.append_row([entry, image_filename, od_float, predicted_od, deviation])
 
                 os.remove(temp_image_path)
 
@@ -132,8 +130,8 @@ if uploaded_file:
                 # ✅ Show Deviation Trend
                 st.subheader("📉 Model Deviation Over Time")
 
-                df = pd.DataFrame(sheet.get_all_records())
-                df_clean = df.dropna(subset=["deviation"])
+                df1 = pd.DataFrame(sheet.get_all_records())
+                df_clean = df1.dropna(subset=["deviation"])
 
                 if not df_clean.empty and "deviation" in df_clean.columns:
                     df_clean["entry"] = range(1, len(df_clean) + 1)
