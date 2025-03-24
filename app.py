@@ -40,7 +40,7 @@ try:
 except:
     sheet = client.create(sheet_name).sheet1
     sheet.append_row(['image_filename', 'od', 'predicted_od', 'deviation'])
-    df = pd.DataFrame(columns=['image_filename', 'od'])
+    df = pd.DataFrame(columns=['image_filename', 'od','predicted_od', 'deviation'])
 
 # ✅ Function to download images from Google Drive
 def download_image_from_drive(service, file_name, output_path, image_subfolder_id):
@@ -138,8 +138,6 @@ if uploaded_file:
                 if not df_clean.empty and "deviation" in df_clean.columns:
                     df_clean["entry"] = range(1, len(df_clean) + 1)
                     st.line_chart(df_clean[["deviation"]].set_index("entry"))
-               
-                st.dataframe(df_clean)
 
                 # ✅ Stats
                 current_dev = df_clean["deviation"].iloc[-1]
