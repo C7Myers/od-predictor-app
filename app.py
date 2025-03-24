@@ -138,7 +138,7 @@ if uploaded_file:
                 st.line_chart(df_clean[["deviation"]].set_index("entry"))
 
                 # ✅ Stats
-                current_dev = deviation
+                current_dev = df_clean["deviation"].iloc[-1]
                 avg_dev = df_clean["deviation"].mean()
 
                 st.write(f"📈 Current Deviation: `{current_dev:.3f}`")
