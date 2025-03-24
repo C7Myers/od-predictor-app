@@ -131,11 +131,15 @@ if uploaded_file:
 
                 # ✅ Show Deviation Trend
                 st.subheader("📉 Model Deviation Over Time")
-                df = pd.DataFrame(sheet.get_all_records())
+
+                df1 = pd.DataFrame(sheet.get_all_records())
                 df_clean = df.dropna(subset=["deviation"])
-                df_clean["entry"] = range(1, len(df_clean) + 1)
-                
-                st.line_chart(df_clean[["deviation"]].set_index("entry"))
+
+                if not df_clean.empty and "deviation" in df_clean.columns:
+                    df_clean["entry"] = range(1, len(df_clean) + 1)
+                    st.line_chart(df_clean[["deviation"]].set_index("entry"))
+               
+                st.dataframe(df_clean)
 
                 # ✅ Stats
                 current_dev = df_clean["deviation"].iloc[-1]
