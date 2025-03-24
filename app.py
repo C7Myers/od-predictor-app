@@ -127,9 +127,6 @@ if uploaded_file:
 
                 st.success("✅ Thank you for helping train the model!")
 
-                # ✅ Show Deviation Trend
-                st.subheader("📉 Model Deviation Over Time")
-
                 df1 = pd.DataFrame(sheet.get_all_records())
                
                 # Skip first 5 rows (they won't have predictions)
@@ -141,6 +138,7 @@ if uploaded_file:
                     st.line_chart(df_plot["deviation"])
 
                 # ✅ Stats
+                df1["deviation"] = pd.to_numeric(df1["deviation"], errors="coerce")
                 current_dev = df1["deviation"].iloc[-1]
                 avg_dev = df1["deviation"].mean()
 
