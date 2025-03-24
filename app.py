@@ -132,7 +132,7 @@ if uploaded_file:
                 # ✅ Show Deviation Trend
                 st.subheader("📉 Model Deviation Over Time")
 
-                df1 = pd.DataFrame(sheet.get_all_records())
+                df = pd.DataFrame(sheet.get_all_records())
                 df_clean = df.dropna(subset=["deviation"])
 
                 if not df_clean.empty and "deviation" in df_clean.columns:
