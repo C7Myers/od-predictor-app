@@ -104,7 +104,7 @@ if uploaded_file:
 
     od_value = st.text_input("Enter Actual OD:", "")
 
-    if st.button("Please Save Image & Actual OD"):
+    if st.button("Save Image & Actual OD"):
         if od_value:
             try:
                 od_float = float(od_value)
@@ -131,15 +131,18 @@ if uploaded_file:
                 st.subheader("📉 Model Deviation Over Time")
 
                 df1 = pd.DataFrame(sheet.get_all_records())
-                df_clean = df1.dropna(subset=["deviation"])
+               
+                # Skip first 5 rows (they won't have predictions)
+                df_plot = df1.iloc[5:].copy()
 
-                if not df_clean.empty and "deviation" in df_clean.columns:
-                    df_clean["entry"] = range(1, len(df_clean) + 1)
-                    st.line_chart(df_clean[["deviation"]].set_index("entry"))
+                # Only plot if deviation column exists and isn't all blank
+                if "deviation" in df_plot.columns and not df_plot["deviation"].isnull().all():
+                    st.subheader("📉 Model Deviation Over Time")
+                    st.line_chart(df_plot["deviation"])
 
                 # ✅ Stats
-                current_dev = df_clean["deviation"].iloc[-1]
-                avg_dev = df_clean["deviation"].mean()
+                current_dev = df1["deviation"].iloc[-1]
+                avg_dev = df1["deviation"].mean()
 
                 st.write(f"📈 Current Deviation: `{current_dev:.3f}`")
                 st.write(f"📊 Average Deviation: `{avg_dev:.3f}`")
