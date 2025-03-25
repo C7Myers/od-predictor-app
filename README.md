@@ -11,6 +11,7 @@ A web app for predicting optical density (OD) of liquid cultures using uploaded 
 3. The app predicts the OD using a trained machine learning model.
 4. Your image is saved to Google Drive, and OD data is stored in Google Sheets.
 5. After 5+ samples, the model automatically retrains to improve accuracy.
+6. Track model progression by plotting the deviation between predicted and actual OD, and see how each run compares to the average deviation.
 
 ## 📦 Tech Stack
 
