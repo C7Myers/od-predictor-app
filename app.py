@@ -60,29 +60,24 @@ def download_image_from_drive(service, file_name, output_path, image_subfolder_i
     
     return output_path  # ✅ Local path to downloaded image
 
-# ✅ Train model if enough data is available
-if len(df) >= 5:
-    X = []
-    y = []
+# ✅ Train model
+X = []
+y = []
     
-    for _, row in df.iterrows():
-        local_path = f"temp_downloaded_{row['image_filename']}"
-        downloaded_path = download_image_from_drive(drive_service, row["image_filename"], local_path, image_subfolder_id)
+for _, row in df.iterrows():
+    local_path = f"temp_downloaded_{row['image_filename']}"
+    downloaded_path = download_image_from_drive(drive_service, row["image_filename"], local_path, image_subfolder_id)
         
-        if downloaded_path:  # ✅ Only process if download was successful
-            X.append(preprocess_image(downloaded_path))
-            y.append(row["od"])
+    if downloaded_path:  # ✅ Only process if download was successful
+        X.append(preprocess_image(downloaded_path))
+        y.append(row["od"])
 
-    X = np.array(X)
-    y = np.array(y)
+X = np.array(X)
+y = np.array(y)
 
-    model = RandomForestRegressor(n_estimators=50)
-    model.fit(X, y)
-    prediction_ready = True
-else:
-    prediction_ready = False
-    model = None
-    st.info(f"ℹ️ Add {5 - len(df)} more images to start predictions.")
+model = RandomForestRegressor(n_estimators=50)
+model.fit(X, y)
+
 
 # ✅ Upload Image
 uploaded_file = st.file_uploader("Upload Image", type=['jpg', 'jpeg', 'png'])
@@ -94,13 +89,10 @@ if uploaded_file:
     temp_image_path = 'temp.jpg'
     image.save(temp_image_path)
 
-    # ✅ Predict OD if model is trained
-    if prediction_ready:
-        features = preprocess_image(temp_image_path).reshape(1, -1)
-        predicted_od = model.predict(features)[0]
-        st.success(f"🔮 Predicted OD: {predicted_od:.3f}")
-    else:
-        st.warning("⚠️ Prediction unavailable, more data needed.")
+    # ✅ Predict OD based on model 
+    features = preprocess_image(temp_image_path).reshape(1, -1)
+    predicted_od = model.predict(features)[0]
+    st.success(f"🔮 Predicted OD: {predicted_od:.3f}")
 
     od_value = st.text_input("Enter Actual OD:", "")
 
