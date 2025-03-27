@@ -13,6 +13,17 @@ A web app for predicting optical density (OD) of liquid cultures using uploaded 
 5. After 5+ samples, the model automatically retrains to improve accuracy.
 6. Track model progression by plotting the deviation between predicted and actual OD, and see how each run compares to the average deviation.
 
+## ✅ Advantages of This App
+
+1. **Reduces reliance on the spectrophotometer**  
+  Skip unnecessary trips to the spec — get quick estimates right from your phone.
+
+2. **Cuts down on disposable costs**  
+  No need to use extra cuvettes or pipette tips for every OD reading.
+
+3. **Preserves your samples**  
+  Don’t waste your culture just to take a reading — save it for actual experiments.
+
 ## 📦 Tech Stack
 
 - **Streamlit**: Web app interface
