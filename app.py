@@ -29,6 +29,7 @@ client = gspread.authorize(creds)
 drive_service = build("drive", "v3", credentials=creds)
 
 # ✅ Your Google Drive folder ID
+folder_id = '1gaU-WUZesT9E4VXRnIs6H4NVslI861tk'
 image_subfolder_id = '11IXxbuYT7gAvd4Yggn1GtAd2sv0FF_RO'
 
 # ✅ Open or create Google Sheet for OD data
