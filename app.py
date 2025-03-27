@@ -29,7 +29,6 @@ client = gspread.authorize(creds)
 drive_service = build("drive", "v3", credentials=creds)
 
 # ✅ Your Google Drive folder ID
-folder_id = '1gaU-WUZesT9E4VXRnIs6H4NVslI861tk'
 image_subfolder_id = '11IXxbuYT7gAvd4Yggn1GtAd2sv0FF_RO'
 
 # ✅ Open or create Google Sheet for OD data
@@ -78,7 +77,6 @@ y = np.array(y)
 model = RandomForestRegressor(n_estimators=50)
 model.fit(X, y)
 
-
 # ✅ Upload Image
 uploaded_file = st.file_uploader("Upload Image", type=['jpg', 'jpeg', 'png'])
 
@@ -120,14 +118,11 @@ if uploaded_file:
                 st.success("✅ Thank you for helping train the model!")
 
                 df1 = pd.DataFrame(sheet.get_all_records())
-               
-                # Skip first 5 rows (they won't have predictions)
-                df_plot = df1.iloc[5:].copy()
 
                 # Only plot if deviation column exists and isn't all blank
-                if "deviation" in df_plot.columns and not df_plot["deviation"].isnull().all():
+                if "deviation" in df1.columns and not df1["deviation"].isnull().all():
                     st.subheader("📉 Model Deviation Over Time")
-                    st.line_chart(df_plot["deviation"])
+                    st.line_chart(df1["deviation"])
 
                 # ✅ Stats
                 df1["deviation"] = pd.to_numeric(df1["deviation"], errors="coerce")
