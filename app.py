@@ -95,6 +95,7 @@ if uploaded_file:
 
     od_value = st.text_input("Enter Actual OD:", "")
 
+
     if st.button("Save Image & Actual OD"):
         if od_value:
             try:
@@ -106,6 +107,7 @@ if uploaded_file:
                 file_metadata = {'name': image_filename, 'parents': [image_subfolder_id]}
                 media = MediaFileUpload(temp_image_path, mimetype='image/jpeg')
                 drive_service.files().create(body=file_metadata, media_body=media).execute()
+                deviation = abs(od_float -  predicted_od) if predicted_od is not None else None
 
                 # ✅ Save OD entry to Google Sheets
                 sheet.append_row([entry, image_filename, od_float, predicted_od, deviation])
