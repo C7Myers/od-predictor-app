@@ -107,10 +107,6 @@ if uploaded_file:
                 media = MediaFileUpload(temp_image_path, mimetype='image/jpeg')
                 drive_service.files().create(body=file_metadata, media_body=media).execute()
 
-                # Calculate prediction and deviation
-                predicted_od = model.predict(features)[0] 
-                deviation = abs(od_float - predicted_od) if predicted_od is not None else None
-
                 # ✅ Save OD entry to Google Sheets
                 sheet.append_row([entry, image_filename, od_float, predicted_od, deviation])
 
