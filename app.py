@@ -108,7 +108,7 @@ if uploaded_file:
                 drive_service.files().create(body=file_metadata, media_body=media).execute()
 
                 # Calculate prediction and deviation
-                predicted_od = model.predict(features)[0] if prediction_ready else None
+                predicted_od = model.predict(features)[0] 
                 deviation = abs(od_float - predicted_od) if predicted_od is not None else None
 
                 # ✅ Save OD entry to Google Sheets
